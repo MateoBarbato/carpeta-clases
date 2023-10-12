@@ -29,6 +29,14 @@ def crearBloque (left=0,top=0,ancho=25,alto=25,color=config.GREEN, borde = 0, ra
     rect = pygame.Rect(left,top,ancho,alto)
     return { 'rect':rect , 'color':color, 'borde':borde,'radio':radio}
 
+def crearRecImagen (left=0,top=0,ancho=25,alto=25,color=config.GREEN, borde = 0, radio= -1,image=None):
+    if image:
+        image = pygame.transform.scale(image,(ancho,alto))
+    else:
+        image = None
+    rect = pygame.Rect(left,top,ancho,alto)
+    return { 'rect':rect , 'color':color, 'borde':borde,'radio':radio,'image':image}
+
 def randomColor ():
     color = (randint(0,255),randint(0,255),randint(0,255))
     return color
