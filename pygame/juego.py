@@ -2,7 +2,7 @@ import pygame , sys
 import config as cfg
 from pygame import draw, time,event,display,font
 from random import randint
-import colisiones
+from colisiones import *
 
 pygame.init()
 font.init()
@@ -17,7 +17,7 @@ size = (width,height)
 is_running = True
 ancho=cfg.ANCHO
 alto=cfg.ALTO
-contadorVidas = cfg.VIDAS
+contadorVidas = 3
 contadorScore = cfg.SCORE
 pos_y=cfg.POS_Y
 pos_x = cfg.POS_X
@@ -25,11 +25,13 @@ tiro = ''
 color = cfg.GREEN
 mute = False
 alive = True
+vidasDificultad = 1
 # LLAMO A LOS ASSETS
 backgroundImage = pygame.image.load('./assets/background.jpg')
 EnemiesImage0 = pygame.image.load('./assets/enemy0.png')
 EnemiesImage1 = pygame.image.load('./assets/enemy1.png')
 mainBlockImg = pygame.image.load('./assets/spaceShip.png')
+bulletImg = pygame.image.load('./assets/bullet.png')
 dying = pygame.mixer.Sound('./assets/dyingsound.mp3')
 golpenave = pygame.mixer.Sound('./assets/golpenave.mp3')
 explosionFinal = pygame.mixer.Sound('./assets/explosionFinal.mp3')
@@ -37,6 +39,7 @@ explosion = pygame.mixer.Sound('./assets/explosion.mp3')
 music = pygame.mixer.music.load('./assets/8BitMateo.mp3')
 pygame.mixer.music.play(-1)
 bloques= []
+disparos = []
 enemiesImages = [EnemiesImage0,EnemiesImage1]
 
 screen = display.set_mode(size)
@@ -69,6 +72,7 @@ while is_running:
             print('Saliendo')
             sys.exit()
         if event.type == pygame.MOUSEBUTTONUP:
+            disparos.append(crearDisparo(mainBlock['rect'].x,mainBlock['rect'].y,bulletImg))
             color = cfg.GREEN
         if event.type == deathEvent:
             is_running = False
@@ -76,9 +80,10 @@ while is_running:
             i = randint(1,4)
             if i%2==0:
                 random = 0
+                bloques.append(crearRecImagen(left=randint(50,350),ancho=ancho,alto=alto,top=0,image=enemiesImages[random],vidas=3))
             else:
                 random = 1
-            bloques.append(colisiones.crearRecImagen(left=randint(50,350),ancho=ancho,alto=alto,top=0,image=enemiesImages[random]))
+                bloques.append(crearRecImagen(left=randint(50,350),ancho=ancho,alto=alto,top=0,image=enemiesImages[random],vidas=vidasDificultad))
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
                 move_left = False
@@ -93,7 +98,6 @@ while is_running:
                 elif mute == False:
                     mute = True
                     pygame.mixer.music.set_volume(False)
-                    
             if event.key == pygame.K_ESCAPE:
                 print('Saliendo')
                 sys.exit()
@@ -104,10 +108,10 @@ while is_running:
                 move_left = False
 
 # ACTUALIZO ELEMENTOS
-    # Blit De Todo
+    # Blit De Textos
     backgroundImage = pygame.transform.scale(backgroundImage,(width,height))
     screen.blit(backgroundImage,backgroundRect)
-    mainBlock = colisiones.crearRecImagen(pos_x,pos_y,45,45,color=cfg.GREEN,image=mainBlockImg)
+    mainBlock = crearRecImagen(pos_x,pos_y,45,45,color=cfg.GREEN,image=mainBlockImg)
     screen.blit(mainBlock['image'],mainBlock['rect'])
     if alive:
         text_vidas = my_font.render(f'Vidas:{contadorVidas}',True,cfg.WHITE)
@@ -117,36 +121,46 @@ while is_running:
     else:
         text_death = deathFont.render(f'GAME OVER' , True , cfg.RED)
         screen.blit(text_death,((width - text_death.get_width())/2,(height - text_death.get_height())/2))
-    # DISPARAR
-    if pygame.mouse.get_pressed()[0] == True and clock.get_rawtime() == 1:
-       tiro = draw.line(screen,cfg.WHITE,(mainBlock['rect'].centerx,mainBlock['rect'].centery-20),(mainBlock['rect'].centerx,0))
-       color = cfg.RED
-    # DIBUJO LOS BLOQUES
+    # Blit de disparos
     if alive:
+        for disparo in disparos:
+            screen.blit(disparo['image'],disparo['rect'])
+            pass
         for bloque in bloques:
             screen.blit(bloque['image'],bloque['rect'])
-    else:
-        for bloque in bloques:
-            # FORMA DE HACER INVISIBLE A LOS OBJETOS QUE CAEN AL MORIR
-            # screen.blit(bloque['image'],bloque['rect'])
-            pass
 
-    # HAGO CAER LOS BLOQUES Y DETECTO COLISIONES
+# MOVER ELEMENTOS
+
+    # MUEVO LOS ALIENS CAYENDO Y LOS DISPAROS
+    for disparo in disparos[:]:
+        rectDisparo=disparo['rect']
+        rectDisparo.y -= Speed * 2
+        color = cfg.RED
+        if rectDisparo.top > screen.get_height():
+            disparos.remove(disparo)
     for bloque in bloques[:]:
-        # muevo los bloques que caen
         rect=bloque['rect']
         rect.y += Speed
+    # DETECTO COLISIONES
         if rect.top > screen.get_height():
             bloques.remove(bloque)
-        # chequeo la colision con la recta de tiro
-        if tiro != '':
-            if tiro.colliderect(bloque['rect']):
-                bloques.remove(bloque)
-                contadorScore +=1
+        # chequeo la colision con el tiro y los aliens
+        for disparo in disparos:
+            if detectar_colision_circ(rect,disparo['rect']):
+                if bloque['vidas'] == 1:
+                    bloques.remove(bloque)
+                    contadorScore +=1
+                else:
+                    bloque['vidas'] -= 1
+                    # dificultad
+                if contadorScore >= 50:
+                    vidasDificultad = 2
+                elif contadorScore >= 100:
+                    vidasDificultad = 3
+                disparos.remove(disparo)
                 explosion.play()
         # detecto las colisiones con el mainbody para restar vidas
-        if colisiones.detectar_colision_circ(rect,mainBlock['rect']):
-            time = pygame.time.get_ticks()
+        if detectar_colision_circ(rect,mainBlock['rect']):
             if contadorVidas == 1 :
                 alive = False
                 bloques = []
@@ -159,23 +173,11 @@ while is_running:
                 contadorVidas -= 1
                 golpenave.play()
                 bloques.remove(bloque)
-                
-                
-
-        
-    # # BLOQUE PRINCIPAL
-    # mainBlock = draw.circle(screen,color,(pos_x,pos_y),26,19,draw_top_left=True,draw_top_right=True)
-    
-   
-    
+# MUEVO EL MAIN BLOCK
     if move_left and mainBlock['rect'].left > 0:
         pos_x -= Speed
-    
     if move_rigth and mainBlock['rect'].right < width :
         pos_x += Speed
-    
-
-
 
     # ACTUALIZO PANTALLA
     pygame.display.flip()
