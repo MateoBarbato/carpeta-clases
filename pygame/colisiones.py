@@ -35,7 +35,7 @@ def crearRecImagen (left=0,top=0,ancho=25,alto=25,color=config.GREEN, borde = 0,
     else:
         image = None
     rect = pygame.Rect(left,top,ancho,alto)
-    return { 'rect':rect , 'color':color, 'borde':borde,'radio':radio,'image':image,'vidas':vidas}
+    return { 'rect':rect , 'color':color, 'borde':borde,'radio':radio,'image':image,'vidas':vidas,'speed-y':randint(2,3),'speed-x':randint(2,3)}
 
 def randomColor ():
     color = (randint(0,255),randint(0,255),randint(0,255))
@@ -53,3 +53,18 @@ def crearDisparo(left,top,imagen):
     disparoRec = pygame.Rect(left,top,ancho,alto)
     return { 'rect':disparoRec,"image":imagen}
 
+def waitUser (events,sys):
+    while True:
+        for event in events:
+            if event.type == pygame.QUIT:
+                print('Hasta luego lucassss')
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    print('See ya laater lucass')
+                    sys.exit()
+            return
+
+def mostrarTexto (fuente,texto,AA,color,coordinates,screen):
+    text_score = fuente.render(texto,AA,color)
+    screen.blit(text_score,coordinates)
