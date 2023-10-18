@@ -1,6 +1,7 @@
 import math
 import pygame
 import config
+import sys
 from random import randint
 def punto_en_rectangulo(punto,rect):
     x, y = punto
@@ -53,9 +54,9 @@ def crearDisparo(left,top,imagen):
     disparoRec = pygame.Rect(left,top,ancho,alto)
     return { 'rect':disparoRec,"image":imagen}
 
-def waitUser (events,sys):
+def waitUser ():
     while True:
-        for event in events:
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 print('Hasta luego lucassss')
                 sys.exit()
@@ -63,8 +64,14 @@ def waitUser (events,sys):
                 if event.key == pygame.K_ESCAPE:
                     print('See ya laater lucass')
                     sys.exit()
-            return
+                return
 
 def mostrarTexto (fuente,texto,AA,color,coordinates,screen):
     text_score = fuente.render(texto,AA,color)
     screen.blit(text_score,coordinates)
+
+
+def exit():
+    print('Nos vemos en la proxima!')
+    pygame.quit()
+    sys.exit()

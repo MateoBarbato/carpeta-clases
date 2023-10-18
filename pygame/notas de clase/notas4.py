@@ -7,9 +7,8 @@ from colisiones import *
 pygame.init()
 font.init()
 Speed = cfg.VELOCIDAD 
-my_font = pygame.font.SysFont('javanesetext', 24,True)
-# deathFont = pygame.font.SysFont('javanesetext', 24,True)
-startFont = pygame.font.SysFont('javanesetext', 28,True)
+my_font = pygame.font.SysFont('Comic Sans MS', 24,True)
+deathFont = pygame.font.SysFont('Comic Sans MS', 38,True)
 clock = time.Clock()
 width = cfg.WIDTH
 height = cfg.HEIGHT
@@ -36,7 +35,8 @@ dying = pygame.mixer.Sound('./assets/dyingsound.mp3')
 golpenave = pygame.mixer.Sound('./assets/golpenave.mp3')
 explosionFinal = pygame.mixer.Sound('./assets/explosionFinal.mp3')
 explosion = pygame.mixer.Sound('./assets/explosion.mp3')
-music = pygame.mixer.music.load('./assets/8BitMateo.mp3')
+music = pygame.mixer.music.load('./assets/8Bit.mp3')
+pygame.mixer.music.play(-1)
 # volumen default
 pygame.mixer.music.set_volume(0.5)
 screen = display.set_mode(size)
@@ -62,38 +62,31 @@ bloques= []
 disparos = []
 enemiesImages = [EnemiesImage0,EnemiesImage1]
 
-def limpiar():
-    bloques.clear()
-    disparos.clear()
-    mainBlock['rect'].move_ip((width - 45)//2, pos_y)
 
+def exit():
+    pygame.quit()
+    sys.exit()
 
 while True:
-    backgroundStartImage = pygame.transform.scale(backgroundImage,(width,height))
+    backgroundStartImage = pygame.transform.scale(backgroundStart,(width,height))
     screen.blit(backgroundStartImage,backgroundRect)
-    mostrarTexto(startFont,f'Press a key to start playing.',True,cfg.WHITE,(40,(height - 50)/2.5),screen)
-    mostrarTexto(startFont,f'Max Score: {cfg.MAXSCORE}',True,cfg.WHITE,(15,(height - 50)/2),screen)
-    mostrarTexto(startFont,f'Attempts: {cfg.INTENTOS}',True,cfg.WHITE,((width+100)/2,(height - 50)/2),screen)
-    pygame.display.flip()
+    mostrarTexto(deathFont,f'Presiona una tecla para jugar...',True,cfg.LAVENDER,((width - 225) /2,(height - 50)/2),screen)
     contadorVidas = 3
     contadorScore = 0
-    is_running = True
     waitUser()
-    # volumen default y loop de musica
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(0.5)
+    
     while is_running:
         clock.tick(cfg.FPS)
         # DETECTO EVENTOS
+        screen.fill(cfg.BLACK)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                exit()
+                print('Saliendo')
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONUP:
                 disparos.append(crearDisparo(mainBlock['rect'].x,mainBlock['rect'].y,bulletImg))
             if event.type == deathEvent:
                 dying.play()
-                limpiar()
-                is_running = False
             if event.type == shootEvent:
                 disparos.append(crearDisparo(mainBlock['rect'].x,mainBlock['rect'].y,bulletImg))
             if event.type == timer_event:
@@ -104,8 +97,8 @@ while True:
                     bloques.append(crearRecImagen(left=randint(50,350),ancho=ancho,alto=alto,top=0,image=enemiesImages[i],vidas=3))
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    limpiar()
-                    is_running = False
+                    print('Saliendo')
+                    is_running=False
                 if event.key == pygame.K_SPACE:
                     disparos.append(crearDisparo(mainBlock['rect'].x,mainBlock['rect'].y,bulletImg))
                 if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
@@ -114,6 +107,9 @@ while True:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                     move_rigth = False
                     move_left = True
+                # ARREGLAR LA PAUSA
+                # if event.key == pygame.K_p:
+                #     waitUser(pygame.event.get(),sys)
                 if event.key == pygame.K_h:
                     hardcoreMode = not hardcoreMode
                 if event.key == pygame.K_m:
@@ -124,12 +120,12 @@ while True:
                         mute = not mute
                         pygame.mixer.music.set_volume(False)
                 if event.key == pygame.K_k:
-                    if musicIndex:
-                        music =  pygame.mixer.music.load('./assets/8Bit.mp3')
+                    if musicIndex == True:
+                        music =  pygame.mixer.music.load('./assets/8BitMateo.mp3')
                         pygame.mixer.music.play(-1)
                         musicIndex = not musicIndex
                     else:
-                        music =  pygame.mixer.music.load('./assets/8BitMateo.mp3')
+                        music =  pygame.mixer.music.load('./assets/8Bit.mp3')
                         pygame.mixer.music.set_volume(0.3)
                         pygame.mixer.music.play(-1)
                         musicIndex = not musicIndex
@@ -146,17 +142,46 @@ while True:
         screen.blit(backgroundImage,backgroundRect)
         mainBlock = crearRecImagen(pos_x,pos_y,45,45,color=cfg.WHITE,image=mainBlockImg)
         screen.blit(mainBlock['image'],mainBlock['rect'])
-        mostrarTexto(my_font,f'Lives: {contadorVidas}',True,cfg.WHITE,(50,90),screen)
-        mostrarTexto(my_font,f'Score: {contadorScore}',True,cfg.WHITE,(width - 150, 90),screen)
+        mostrarTexto(my_font,f'Vidas:{contadorVidas}',True,cfg.WHITE,(50,90),screen)
+        mostrarTexto(my_font,f'Score:{contadorScore}',True,cfg.WHITE,(width - 150, 90),screen)
         if is_running:
             for disparo in disparos:
                 screen.blit(disparo['image'],disparo['rect'])
             for bloque in bloques:
                 screen.blit(bloque['image'],bloque['rect'])
+        
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+
+
+
         # PREGUNTAR PORQUE EL BUG DE CUANDO ESTA EN FALSE LO TOMA COMO TRUE Y VICEVERSA, ACA DEBERIA IR UN TRUE PERO LO CONSIDERA UN FALSE Y NO DISPARA. SE QUEDA DISPARANDO CUANDO SOLTAS ES CLICK SI ESTA EN TRUE.
         # Y PORQUE EL BUG DE CUANDO PONGO LA BARRA ESPACIADORA TAMBIEN SOLO FUNCIONA CUANDO AMBAS CONDICIONES ESTAN
+
+
+
         if  mousepressed[0] == False : 
             pygame.time.set_timer(shootEvent, shootInterval)
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+        # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
+            # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>><><><><><><><><><><><><><><><><><><><><<<>><><><><<><><><><><><><><><><>><><<><><><><>
         # MOVER ELEMENTOS
         # MUEVO LOS ALIENS CAYENDO Y LOS DISPAROS
         for disparo in disparos[:]:
@@ -201,14 +226,13 @@ while True:
             # detecto las colisiones con el mainbody para restar vidas
             if detectar_colision_circ(rect,mainBlock['rect']):
                 if contadorVidas == 1 :
-                    limpiar()
+                    bloques.clear()
+                    disparos.clear()
                     explosionFinal.play()
                     if cfg.MAXSCORE<contadorScore:
                         cfg.MAXSCORE = contadorScore
-                        cfg.INTENTOS = 0
-                    else:
-                        cfg.INTENTOS += 1
-                    pygame.time.set_timer(deathEvent,100,1)
+                    is_running=False
+                    pygame.time.set_timer(deathEvent,100)
                 else:
                     contadorVidas -= 1
                     golpenave.play()
@@ -223,8 +247,6 @@ while True:
     # AFUERA DEL IS_RUNNING
     backgroundImage = pygame.transform.scale(backgroundImage,(width,height))
     screen.blit(backgroundImage,backgroundRect)
-    mostrarTexto(my_font,f'Game Over !',True,cfg.LAVENDER,((width -125) /2,(height - 50)/2),screen)
-    mostrarTexto(my_font,f'Press any key to continue',True,cfg.LAVENDER,((width - 250)/2,(height - 50)/1.7),screen)
+    mostrarTexto(deathFont,f'Game Over :(',True,cfg.LAVENDER,((width - 225) /2,(height - 50)/2),screen)
     pygame.mixer.music.stop()
     pygame.display.flip()
-    waitUser()
